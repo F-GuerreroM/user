@@ -1,5 +1,5 @@
 package com.usuario.controller;
-
+import com.usuario.dto.LoginRequest;
 import com.usuario.model.Usuario;
 import com.usuario.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -8,9 +8,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import com.usuario.dto.RecuperarRequest;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
+@CrossOrigin(origins = "http://localhost:4200")
 public class UsuarioController {
 
     @Autowired
@@ -51,5 +55,27 @@ public class UsuarioController {
             return ResponseEntity.noContent().build(); // 204
         }
         return ResponseEntity.notFound().build(); // 404
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        return usuarioService.validarLogin(request.getEmail(), request.getPassword())
+                .map(usuario -> ResponseEntity.ok(usuario)) // Devuelve código 200 y los datos
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()); // Devuelve código 401
+    }
+
+    @PostMapping("/recuperar")
+    public ResponseEntity<?> recuperar(@RequestBody RecuperarRequest request) {
+        boolean exito = usuarioService.recuperarPassword(request.getEmail());
+        
+        Map<String, String> respuesta = new HashMap<>();
+        
+        if (exito) {
+            respuesta.put("mensaje", "Contraseña temporal generada. Revisa la consola del servidor.");
+            return ResponseEntity.ok(respuesta); // Código 200
+        } else {
+            respuesta.put("error", "El correo ingresado no existe en nuestros registros.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuesta); // Código 404
+        }
     }
 }
