@@ -29,5 +29,5 @@ public class Usuario {
     private String password;
 
     @NotBlank(message = "El rol es obligatorio")
-    private String rol; // Ejemplo: ADMIN, USER, MAESTRO
+    private String rol;
 }
